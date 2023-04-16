@@ -55,6 +55,16 @@ df_combined_processed = pd.concat([df_cdn_processed, df_kindercare_processed])
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
+#Metrics
+
+total_locations_kindercare = df_kindercare.SchoolID.nunique()
+locations_with_addresses_kindercare = df_kindercare_processed.SchoolID.nunique()
+locations_missing_addresses_kindercare = total_locations_kindercare - locations_with_addresses_kindercare
+
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+
 #Plot Function
 
 #colors
@@ -80,7 +90,6 @@ fig.update_layout(
     )
 
 
-
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 #Page Output
@@ -90,3 +99,6 @@ st.write('---')
 
 st.plotly_chart(fig, use_container_width=True)
 
+#add footnotes
+st.write(f'*Some address data could not be geocoded due to bad/non-matching address data. These points were plotted according to their zip code instead.')
+st.write(f'*Showing {locations_with_addresses_kindercare} of {total_locations_kindercare} total Kindercare locations, where address data was available.')
