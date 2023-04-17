@@ -71,24 +71,35 @@ locations_missing_addresses_kindercare = total_locations_kindercare - locations_
 color_blue = '#2a3bfa'
 color_red = '#fa512a'
 
-import plotly.io as pio
-pio.renderers.default = "browser"
+def show_map(clusters):
 
-#fig
-fig = px.scatter_mapbox(df_combined_processed, lat='GeocodedLat', lon='GeocodedLon', color='Brand',
-                        color_discrete_sequence=[color_blue, color_red],
-                        hover_data=['SchoolID', 'CenterName', 'CenterDirector', 'CenterPageLink'],
-                        zoom=4, mapbox_style='light',
-                        center=dict(lat=39.8283, lon=-98.5795))
+    #fig
+    fig = px.scatter_mapbox(df_combined_processed, lat='GeocodedLat', lon='GeocodedLon', color='Brand',
+                            color_discrete_sequence=[color_blue, color_red],
+                            hover_data=['SchoolID', 'CenterName', 'CenterDirector', 'CenterPageLink'],
+                            zoom=4, mapbox_style='light',
+                            center=dict(lat=39.8283, lon=-98.5795))
 
-fig.update_traces(marker_size=16, marker_opacity=0.50, cluster=dict(enabled=True, opacity=0.75, step=3))
+    if clusters == "clusters on":
+        fig.update_traces(marker_size=16, marker_opacity=0.50, cluster=dict(enabled=True, opacity=0.75, step=2))
+    else:
+        fig.update_traces(marker_size=16, marker_opacity=0.50)
 
-fig.update_layout(
-    height=1000, width=1800,
-    legend=dict(font_size=18, title='', orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-    font_family='Roboto', margin=dict(l=0, r=0, t=100, b=0)
-    )
+    fig.update_layout(
+        height=1000, width=1800,
+        legend=dict(font_size=18, title='', orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+        font_family='Roboto', margin=dict(l=0, r=0, t=100, b=0)
+        )
 
+
+    return(fig)
+
+#------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+#Sidebar
+st.sidebar.write('## Map Options')
+
+show_clusters = st.sidebar.radio(label= '', options=['clusters on', 'clusters off'], horizontal=False)
 
 #------------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -97,7 +108,8 @@ fig.update_layout(
 st.header('Childcare Centers in the U.S.')
 st.write('---')
 
-st.plotly_chart(fig, use_container_width=True)
+
+st.plotly_chart(show_map(show_clusters), use_container_width=True)
 
 #add footnotes
 st.write(f'*Some address data could not be geocoded due to bad/non-matching address data. These points were plotted according to their zip code instead.')
