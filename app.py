@@ -12,7 +12,7 @@ px.set_mapbox_access_token(mapbox_token)
 
 #Page Settings
 
-def max_width(width:str = '1800px'):
+def max_width(width:str = '1600px'):
     st.markdown(f""" 
                 <style> 
                 .appview-container .main .block-container{{ max-width: {width}; }}
@@ -45,9 +45,9 @@ df_cdn_processed = df_cdn[['Brand', 'SchoolID', 'CenterName', 'CenterDirector', 
 #process kindercare table
 df_kindercare = df_kindercare.rename(columns={'CenterLeaderName': 'CenterDirector'})
 df_kindercare['SchoolID'] = df_kindercare['CenterPageLink'].str[-6:]
-df_kindercare_processed = df_kindercare[['Brand', 'SchoolID', 'CenterName', 'CenterDirector', 'GeocodedLat', 'GeocodedLon', 'CenterPageLink']]
 
 #exclude bad data - around 100 schools don't have addreses, need to correct on crawler later!!
+df_kindercare_processed = df_kindercare[['Brand', 'SchoolID', 'CenterName', 'CenterDirector', 'GeocodedLat', 'GeocodedLon', 'CenterPageLink']]
 df_kindercare_processed = df_kindercare_processed.loc[df_kindercare_processed['CenterDirector'] != 'error']
 
 #combine processed tables
@@ -86,7 +86,7 @@ def show_map(clusters):
         fig.update_traces(marker_size=16, marker_opacity=0.50)
 
     fig.update_layout(
-        height=1000, width=1800,
+        height=1000, width=1600,
         legend=dict(font_size=18, title='', orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
         font_family='Roboto', margin=dict(l=0, r=0, t=100, b=0)
         )
@@ -114,3 +114,27 @@ st.plotly_chart(show_map(show_clusters), use_container_width=True)
 #add footnotes
 st.write(f'*Some address data could not be geocoded due to bad/non-matching address data. These points were plotted according to their zip code instead.')
 st.write(f'*Showing {locations_with_addresses_kindercare} of {total_locations_kindercare} total Kindercare locations, where address data was available.')
+st.write('---')
+
+
+#view and download data
+
+#prep export file, reoder cols for cleaner export
+cols = ['Brand', 'SchoolID', 'CenterName', 'CenterDirector', 'CenterLeaderTitle', 'CenterHours', 'CenterAddressCity', 'CenterAddressState', 'CenterAddressZip', 'CenterPageLink']
+df_kindercare_export = df_kindercare[cols]
+df_kindercare_export = df_kindercare_export.sort_values(by='SchoolID')
+
+
+@st.cache
+def convert_df(df):
+    # IMPORTANT: Cache the conversion to prevent computation on every rerun
+    return df.to_csv().encode('utf-8')
+
+df_export = convert_df(df_kindercare_export)
+
+with st.expander("View Kindercare Data"):
+    st.dataframe(df_kindercare_export)
+    st.download_button('Download Data File', data=df_export, file_name='kindercare-locations.csv', mime='text/csv')
+
+
+
